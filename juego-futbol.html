@@ -16,7 +16,6 @@
             --accent-color: #ffd700;
         }
 
-        /* Se envuelven todos los estilos dentro de #game-container para evitar conflictos con el tema de Wordpress */
         #game-container {
             font-family: 'Roboto', sans-serif;
             color: var(--text-color);
@@ -28,32 +27,48 @@
             padding: 20px;
             text-align: center;
             border: 2px solid var(--accent-color);
-            margin: 20px auto; /* Para centrarlo en la página de Wordpress */
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
         }
 
         #game-container h1 {
-            font-family: 'Press Start+2P', cursive;
+            font-family: 'Press Start 2P', cursive;
             color: var(--accent-color);
             margin-bottom: 20px;
+            font-size: 1.8em;
         }
 
         #game-container #scoreboard {
             font-family: 'Press Start 2P', cursive;
             background-color: #111;
             color: #ff0000;
-            padding: 15px;
+            padding: 10px;
             border-radius: 10px;
             margin-bottom: 20px;
-            font-size: 1.5em; /* Ajustado para mejor responsive */
-            letter-spacing: 4px;
+            font-size: 1.2em;
+            letter-spacing: 2px;
             border: 2px solid #333;
             box-shadow: inset 0 0 10px #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        @keyframes flash {
+            0%, 100% { color: #ff0000; text-shadow: none; }
+            50% { color: #ffffff; text-shadow: 0 0 10px #ff0000; }
+        }
+
+        #game-container #scoreboard.flash {
+            animation: flash 0.5s 2;
         }
 
         #game-container #pitch {
             position: relative;
             height: 150px;
-            background-color: #4a4a4a; /* Color base de las gradas */
+            background-color: #4a4a4a;
             background-image: 
                 repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.4) 2px, rgba(0,0,0,0.4) 4px),
                 radial-gradient(ellipse at center, rgba(255,255,255,0.15), transparent 80%);
@@ -61,7 +76,7 @@
             border-radius: 10px;
             margin-bottom: 20px;
             overflow: hidden;
-            padding: 10px; /* Espacio para que se vean las gradas alrededor del campo */
+            padding: 10px;
             box-sizing: border-box;
             display: flex;
             justify-content: center;
@@ -83,133 +98,82 @@
             top: 50%;
             transform: translateY(-50%);
         }
-        #game-container #playing-field::before {
-            left: -2px;
-            width: 30px;
-            height: 60px;
-            border-left: none;
-            border-radius: 0 10px 10px 0;
-        }
-        #game-container #playing-field::after {
-            right: -2px;
-            width: 30px;
-            height: 60px;
-            border-right: none;
-            border-radius: 10px 0 0 10px;
-        }
+        #game-container #playing-field::before { left: -2px; width: 30px; height: 60px; border-left: none; border-radius: 0 10px 10px 0; }
+        #game-container #playing-field::after { right: -2px; width: 30px; height: 60px; border-right: none; border-radius: 10px 0 0 10px; }
         
-        #game-container #mid-line {
+        #game-container #mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background-color: var(--lines-color); transform: translateX(-50%); }
+        #game-container #mid-circle { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; border: 4px solid var(--lines-color); border-radius: 50%; transform: translate(-50%, -50%); }
+        
+        #game-container #player { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 36px; transition: left 0.5s ease-in-out; z-index: 10; }
+
+        #game-container #quiz-container { padding: 20px; background-color: rgba(0,0,0,0.2); border-radius: 10px; }
+        #game-container #question { font-size: 1.5em; margin-bottom: 20px; min-height: 60px; }
+        #game-container #answers { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        #game-container .answer-btn { padding: 15px; font-size: 1.1em; font-weight: bold; background-color: #4a4a4a; color: var(--text-color); border: 2px solid #666; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; }
+        #game-container .answer-btn:hover:not(:disabled) { background-color: var(--accent-color); color: #111; transform: translateY(-3px); }
+        #game-container .answer-btn.correct { background-color: #28a745; border-color: #218838; }
+        #game-container .answer-btn.incorrect { background-color: #dc3545; border-color: #c82333; }
+
+        #game-container #start-btn, #game-container #restart-btn { font-family: 'Press Start 2P', cursive; padding: 20px 40px; font-size: 1.2em; cursor: pointer; background-color: var(--accent-color); color: #111; border: none; border-radius: 10px; transition: transform 0.2s ease; }
+        #game-container #start-btn:hover, #game-container #restart-btn:hover { transform: scale(1.05); }
+        #game-container #result-container { display: none; }
+        #game-container #result-container h2 { font-family: 'Press Start 2P', cursive; font-size: 2em; color: var(--accent-color); }
+        #game-container #result-container p { font-size: 1.2em; }
+
+        /* Estilos para los nuevos elementos */
+        .feedback-overlay {
             position: absolute;
-            left: 50%;
             top: 0;
+            left: 0;
+            right: 0;
             bottom: 0;
-            width: 4px;
-            background-color: var(--lines-color);
-            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-        #game-container #mid-circle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--lines-color);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
+        .feedback-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
         }
-        
-        #game-container #player {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 36px;
-            transition: left 0.5s ease-in-out;
-            z-index: 10;
-        }
-
-        #game-container #quiz-container {
-            padding: 20px;
-            background-color: rgba(0,0,0,0.2);
-            border-radius: 10px;
-        }
-
-        #game-container #question {
-            font-size: 1.5em;
-            margin-bottom: 20px;
-            min-height: 60px;
-        }
-
-        #game-container #answers {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        #game-container .answer-btn {
-            padding: 15px;
-            font-size: 1.1em;
-            font-weight: bold;
-            background-color: #4a4a4a;
-            color: var(--text-color);
-            border: 2px solid #666;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        #game-container .answer-btn:hover:not(:disabled) {
-            background-color: var(--accent-color);
-            color: #111;
-            transform: translateY(-3px);
-        }
-        
-        #game-container .answer-btn.correct {
-            background-color: #28a745;
-            border-color: #218838;
-        }
-        
-        #game-container .answer-btn.incorrect {
-            background-color: #dc3545;
-            border-color: #c82333;
-        }
-
-        #game-container #start-btn, #game-container #restart-btn {
+        .feedback-overlay .big-text {
             font-family: 'Press Start 2P', cursive;
-            padding: 20px 40px;
-            font-size: 1.2em;
-            cursor: pointer;
-            background-color: var(--accent-color);
-            color: #111;
-            border: none;
-            border-radius: 10px;
-            transition: transform 0.2s ease;
-        }
-        
-        #game-container #start-btn:hover, #game-container #restart-btn:hover {
-            transform: scale(1.05);
-        }
-
-        #game-container #result-container {
-            display: none;
-        }
-        
-        #game-container #result-container h2 {
-            font-family: 'Press Start 2P', cursive;
-            font-size: 2em;
+            font-size: 4em;
             color: var(--accent-color);
+            text-shadow: 3px 3px 0 #000;
+            animation: pop-in 0.5s ease;
         }
+         .feedback-overlay .small-text {
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+        .feedback-overlay.correct .small-text { color: #28a745; }
+        .feedback-overlay.incorrect .small-text { color: #dc3545; }
 
-        #game-container #result-container p {
-            font-size: 1.2em;
+        @keyframes pop-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <!-- Este div es el contenedor principal del juego -->
     <div id="game-container">
+        <!-- Overlay para mensajes (GOAL, HALF TIME, etc) -->
+        <div id="feedback-overlay" class="feedback-overlay">
+            <div id="feedback-big-text" class="big-text"></div>
+            <div id="feedback-small-text" class="small-text"></div>
+        </div>
+        
         <h1>Football Vocabulary Quiz</h1>
-        <div id="scoreboard">YOU 0 - 0 OPPONENT</div>
+        <div id="scoreboard">
+            <span>YOU 0 - 0 OPPONENT</span>
+            <span id="timer">00:00</span>
+        </div>
         <div id="pitch">
             <div id="playing-field">
                 <div id="mid-line"></div>
@@ -233,26 +197,92 @@
     </div>
 
     <script>
-        // Se envuelve todo el script en un 'listener' para asegurar que se ejecuta 
-        // solo cuando toda la página de Wordpress se ha cargado.
         document.addEventListener('DOMContentLoaded', () => {
             const gameContainer = document.getElementById('game-container');
-            if (!gameContainer) return; // Si no encuentra el juego, no hace nada
+            if (!gameContainer) return;
 
-            // --- 1. ELEMENTOS DEL DOM ---
-            const startContainer = gameContainer.querySelector('#start-container');
+            // --- AUDIO ---
+            let audioCtx;
+            function initAudio() {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            
+            function playSound(type) {
+                // Para el sonido "Yes", usamos la API de Síntesis de Voz
+                if (type === 'correct') {
+                    const utterance = new SpeechSynthesisUtterance('Yes!');
+                    utterance.lang = 'en-GB'; // Inglés Británico
+                    utterance.pitch = 1.5;    // Tono un poco más agudo
+                    utterance.rate = 1.2;     // Un poco más rápido
+                    window.speechSynthesis.speak(utterance);
+                    return; // Salimos de la función después de hablar
+                }
+                
+                // Para los otros sonidos, continuamos con la Web Audio API
+                if (!audioCtx) return;
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.01);
+
+                if (type === 'incorrect') {
+                    // Sonido descendente para simular "Ohh"
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                } else if (type === 'goal') {
+                    // Sonido de "gol"
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                    // Sonido de la multitud (ruido blanco)
+                    const bufferSize = 2 * audioCtx.sampleRate;
+                    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const output = noiseBuffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+                    const noise = audioCtx.createBufferSource();
+                    noise.buffer = noiseBuffer;
+                    const noiseGain = audioCtx.createGain();
+                    noise.connect(noiseGain);
+                    noiseGain.connect(audioCtx.destination);
+                    noiseGain.gain.setValueAtTime(0, audioCtx.currentTime);
+                    noiseGain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.2);
+                    noiseGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.5);
+                    noise.start();
+                }
+
+                oscillator.start();
+                // Aumentamos la duración del fade-out para el sonido "incorrecto"
+                const fadeOutDuration = type === 'incorrect' ? 0.3 : 0.2;
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + fadeOutDuration);
+                oscillator.stop(audioCtx.currentTime + fadeOutDuration);
+            }
+
+
+            // --- DOM ELEMENTOS ---
             const startBtn = gameContainer.querySelector('#start-btn');
+            const restartBtn = gameContainer.querySelector('#restart-btn');
             const quizContainer = gameContainer.querySelector('#quiz-container');
             const resultContainer = gameContainer.querySelector('#result-container');
+            const startContainer = gameContainer.querySelector('#start-container');
             const scoreboardEl = gameContainer.querySelector('#scoreboard');
+            const timerEl = gameContainer.querySelector('#timer');
             const playerEl = gameContainer.querySelector('#player');
             const questionEl = gameContainer.querySelector('#question');
             const answersEl = gameContainer.querySelector('#answers');
             const resultTitleEl = gameContainer.querySelector('#result-title');
             const resultTextEl = gameContainer.querySelector('#result-text');
-            const restartBtn = gameContainer.querySelector('#restart-btn');
+            const feedbackOverlay = gameContainer.querySelector('#feedback-overlay');
+            const feedbackBigText = gameContainer.querySelector('#feedback-big-text');
+            const feedbackSmallText = gameContainer.querySelector('#feedback-small-text');
 
-            // --- 2. PREGUNTAS DEL JUEGO ---
+            // --- PREGUNTAS AMPLIADAS ---
             const questions = [
                 { question: "What do you call the area where football is played?", answers: ["Pitch", "Garden", "Court", "Track"], correct: 0 },
                 { question: "What is the official who makes sure players follow the rules?", answers: ["Policeman", "Referee", "Teacher", "Manager"], correct: 1 },
@@ -263,14 +293,26 @@
                 { question: "How many players are in a team on the pitch?", answers: ["11", "9", "7", "13"], correct: 0 },
                 { question: "What's the rest period in the middle of a match called?", answers: ["Break-time", "Tea-time", "Stop-time", "Half-time"], correct: 3 },
                 { question: "A player who tries to score goals is a...", answers: ["Keeper", "Full-back", "Striker", "Goalie"], correct: 2 },
-                { question: "If the scores are level, the match is a...", answers: ["Win", "Draw", "Loss", "Foul"], correct: 1 }
+                { question: "Time added for stoppages is called...", answers: ["Extra Time", "Golden Goal", "Injury Time", "Overtime"], correct: 2 },
+                { question: "A kick from the corner of the pitch is a...", answers: ["Goal Kick", "Corner Kick", "Penalty", "Free Kick"], correct: 1 },
+                { question: "A player who scores three goals in a match has a...", answers: ["Trio", "Hat-trick", "Triple", "Trilogy"], correct: 1 },
+                { question: "The players who are not starting the match sit on the...", answers: ["Chair", "Sofa", "Bench", "Stool"], correct: 2 },
+                { question: "What do you call an illegal action against a player?", answers: ["Mistake", "Error", "Foul", "Trip"], correct: 2 },
+                { question: "A direct kick for a foul inside the penalty area is a...", answers: ["Free Kick", "Corner", "Penalty", "Throw-in"], correct: 2 },
+                { question: "The captain of the team often wears an...", answers: ["Armband", "Headband", "Bracelet", "Necklace"], correct: 0 },
+                { question: "Using your head to play the ball is called a...", answers: ["Headbutt", "Header", "Noggin", "Skull"], correct: 1 },
+                { question: "The main competition over a season is the...", answers: ["Cup", "Tournament", "Championship", "League"], correct: 3 },
+                { question: "The two vertical posts and horizontal bar form the...", answers: ["Frame", "Box", "Goalpost", "Square"], correct: 2 },
+                { question: "When a player replaces another, it's a...", answers: ["Change", "Swap", "Substitution", "Switch"], correct: 2 }
             ];
 
-            // --- 3. ESTADO DEL JUEGO ---
-            let currentQuestionIndex, playerScore, opponentScore, ballPosition;
-
-            // --- 4. FUNCIONES DEL JUEGO ---
+            // --- ESTADO DEL JUEGO ---
+            let currentQuestionIndex, playerScore, opponentScore, ballPosition, timerInterval, gameSeconds;
+            let isHalfTime = false;
+            let isGameActive = false;
+            
             function startGame() {
+                initAudio();
                 startContainer.style.display = 'none';
                 resultContainer.style.display = 'none';
                 quizContainer.style.display = 'block';
@@ -278,13 +320,54 @@
                 playerScore = 0;
                 opponentScore = 0;
                 ballPosition = 5;
+                gameSeconds = 0;
+                isHalfTime = false;
+                isGameActive = true;
+                
                 updateScoreboard();
                 updateBallPosition();
                 showQuestion();
+                startTimer();
+            }
+
+            function startTimer() {
+                clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    if (!isGameActive) return;
+                    
+                    gameSeconds++;
+                    
+                    let minutes = Math.floor(gameSeconds / 60);
+                    let seconds = gameSeconds % 60;
+                    
+                    if (!isHalfTime && minutes >= 45) {
+                        isHalfTime = true;
+                        isGameActive = false;
+                        timerEl.innerText = "45:00";
+                        showFeedback("HALF TIME", "", 3000, () => {
+                            gameSeconds = 2700; // 45 * 60
+                            isGameActive = true;
+                        });
+                        return;
+                    }
+                    
+                    if (minutes >= 90) {
+                        timerEl.innerText = "90:00";
+                        endGame();
+                        return;
+                    }
+
+                    timerEl.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }, 1000); // Actualiza cada segundo
             }
 
             function showQuestion() {
+                if (!isGameActive) return;
                 answersEl.innerHTML = '';
+                // Loop questions if we run out before 90 mins
+                if (currentQuestionIndex >= questions.length) {
+                    currentQuestionIndex = 0; 
+                }
                 const currentQuestion = questions[currentQuestionIndex];
                 questionEl.innerText = currentQuestion.question;
                 currentQuestion.answers.forEach((answer, index) => {
@@ -297,14 +380,19 @@
             }
 
             function selectAnswer(selectedIndex) {
+                if (!isGameActive) return;
                 const currentQuestion = questions[currentQuestionIndex];
                 const answerButtons = answersEl.querySelectorAll('.answer-btn');
                 answerButtons.forEach(btn => btn.disabled = true);
                 
                 if (selectedIndex === currentQuestion.correct) {
+                    playSound('correct');
+                    showFeedback("", "Correct!", 1500, null, 'correct');
                     answerButtons[selectedIndex].classList.add('correct');
                     ballPosition++;
                 } else {
+                    playSound('incorrect');
+                    showFeedback("", "Incorrect!", 1500, null, 'incorrect');
                     answerButtons[selectedIndex].classList.add('incorrect');
                     answerButtons[currentQuestion.correct].classList.add('correct');
                     ballPosition--;
@@ -314,8 +402,9 @@
 
                 setTimeout(() => {
                     currentQuestionIndex++;
-                    if (currentQuestionIndex < questions.length) showQuestion();
-                    else endGame();
+                    if (isGameActive) {
+                       showQuestion();
+                    }
                 }, 1500);
             }
 
@@ -324,46 +413,68 @@
                 playerEl.style.left = `${percentage}%`;
 
                 if (ballPosition >= 10) {
+                    playSound('goal');
                     playerScore++;
                     ballPosition = 5;
-                    setTimeout(() => {
-                        playerEl.style.left = `50%`;
-                        updateScoreboard();
-                    }, 500);
+                    showFeedback("GOAL!", "", 2000, () => {
+                        playerEl.style.transition = 'left 0s';
+                        playerEl.style.left = '50%';
+                        setTimeout(() => playerEl.style.transition = 'left 0.5s ease-in-out', 50);
+                    });
+                    updateScoreboard(true);
                 } else if (ballPosition <= 0) {
+                    playSound('goal');
                     opponentScore++;
                     ballPosition = 5;
-                    setTimeout(() => {
-                        playerEl.style.left = `50%`;
-                        updateScoreboard(); // Corrección del error tipográfico
-                    }, 500);
+                    showFeedback("THEY SCORED!", "", 2000, () => {
+                        playerEl.style.transition = 'left 0s';
+                        playerEl.style.left = '50%';
+                        setTimeout(() => playerEl.style.transition = 'left 0.5s ease-in-out', 50);
+                    });
+                    updateScoreboard(true);
                 }
             }
             
-            function updateScoreboard() {
-                scoreboardEl.innerText = `YOU ${playerScore} - ${opponentScore} OPPONENT`;
+            function updateScoreboard(flash = false) {
+                scoreboardEl.querySelector('span').innerText = `YOU ${playerScore} - ${opponentScore} OPPONENT`;
+                if(flash) {
+                    scoreboardEl.classList.add('flash');
+                    setTimeout(() => scoreboardEl.classList.remove('flash'), 1000);
+                }
+            }
+            
+            function showFeedback(bigText, smallText, duration, callback, type = '') {
+                feedbackBigText.innerText = bigText;
+                feedbackSmallText.innerText = smallText;
+                feedbackOverlay.className = 'feedback-overlay visible'; // Reset classes
+                if(type) feedbackOverlay.classList.add(type);
+
+                setTimeout(() => {
+                    feedbackOverlay.classList.remove('visible');
+                    if(callback) callback();
+                }, duration);
             }
 
             function endGame() {
+                isGameActive = false;
+                clearInterval(timerInterval);
                 quizContainer.style.display = 'none';
                 resultContainer.style.display = 'block';
                 
                 if (playerScore > opponentScore) {
-                    resultTitleEl.innerText = "YOU WIN!";
-                    resultTextEl.innerText = `A fantastic victory! Final score: ${playerScore} - ${opponentScore}.`;
+                    resultTitleEl.innerText = "FULL TIME: YOU WIN!";
                 } else if (opponentScore > playerScore) {
-                    resultTitleEl.innerText = "NICE TRY!";
-                    resultTextEl.innerText = `A tough match. Final score: ${playerScore} - ${opponentScore}.`;
+                    resultTitleEl.innerText = "FULL TIME: NICE TRY!";
                 } else {
-                    resultTitleEl.innerText = "IT'S A DRAW!";
-                    resultTextEl.innerText = `An exciting match! Final score: ${playerScore} - ${opponentScore}.`;
+                    resultTitleEl.innerText = "FULL TIME: IT'S A DRAW!";
                 }
+                resultTextEl.innerText = `The final score is ${playerScore} - ${opponentScore}.`;
             }
 
-            // --- 5. EVENT LISTENERS ---
             startBtn.addEventListener('click', startGame);
             restartBtn.addEventListener('click', startGame);
         });
     </script>
 </body>
 </html>
+
